@@ -1,0 +1,204 @@
+pragma solidity ^0.4.24;
+
+import './ERC721.sol';
+import './SafeMath.sol';
+
+contract CryptoBallers is ERC721 {
+    using SafeMath for uint256;
+    struct Baller {
+        string name;
+        uint level;  // 1-5
+        uint offenseSkill; // 1-10
+        uint defenseSkill; // 1-10
+        uint winCount;
+        uint lossCount;
+    }
+
+    address owner;
+    Baller[] public ballers;
+
+    // Mapping for if address has claimed their free baller
+    mapping(address => bool) public claimedFreeBaller;
+
+    // Fee for buying a baller
+    uint ballerFee = 0.10 ether;
+
+    /**
+    * @dev Ensures ownership of the specified token ID
+    * @param _tokenId uint256 ID of the token to check
+    */
+    modifier onlyOwnerOf(uint256 _tokenId) {
+        // TODO add your code
+        // need to verify that the token exists
+        // need to verify that the caller really owns the token
+        require _tokenId != address(0);
+        require owner == ownerOf(_tokenId);
+        _;
+    }
+
+    /**
+    * @dev Ensures ownership of contract
+    */
+    modifier onlyOwner() {
+        // TODO add your code
+        require msg.sender == owner;
+        _;
+    }
+
+    /**
+    * @dev Ensures baller has level above specified level
+    * @param _level uint level that the baller needs to be above
+    * @param _ballerId uint ID of the Baller to check
+    */
+    modifier aboveLevel(uint _level, uint _ballerId) {
+        // TODO add your code
+        require (Baller[_ballerId].level > _level);
+        _;
+    }
+
+    constructor() public {
+        owner = msg.sender;
+    }
+
+    /**
+    * @dev Allows user to claim first free baller, ensure no address can claim more than one
+    */
+    function claimFreeBaller() public {
+        // TODO add your code
+        require Baller.length == 0;
+        require claimedFreeBaller == false;
+        Baller[0] = address _createBaller("rookie", 1, randomGen(), randomGen() ));
+        claimedFreeBaller = true;
+    }
+
+    /**
+    * @dev Allows user to buy baller with set attributes
+    */
+    function buyBaller() public payable {
+        // TODO add your code
+        // need code to check if the buyer has enough ether to buy a baller.
+        // need code to make sure that only 1 new baller is created per call to this function
+        // Transfer the ether to the contract owner//call 
+        // call _createBaller and assign the new _ballerID to the end of the callers Baller[] array.
+    
+        
+    }
+
+    /**
+    * @dev Play a game with your baller and an opponent baller
+    * If your baller has more offensive skill than your opponent's defensive skill
+    * you win, your level goes up, the opponent loses, and vice versa.
+    * If you win and your baller reaches level 5, you are awarded a new baller with a mix of traits
+    * from your baller and your opponent's baller.
+    * @param _ballerId uint ID of the Baller initiating the game
+    * @param _opponentId uint ID that the baller needs to be above
+    */
+    function playBall(uint _ballerId, uint _opponentId) onlyOwnerOf(_ballerId) public {
+       // TODO add your code
+       bool public winGame = false;  // need flag to save status of the game
+        if (owner.Baller[_ballerId].offenseSkill > _opponentId.Baller[_ballerId].defenseSkill) {
+            winGame = true;
+            return ("You Win!!!");
+            owner.Baller[_ballerId].level += 1;
+            if (owner.Baller[_ballerId].level = 5) {
+                _createBaller("Rookie", 1, randomGen(), randomGen());
+                return ("You Win another Baller!!");
+            }
+            
+        } else {
+            winGame = false;
+            return ("Your Opponent Won, Try Again!!");
+            _opponentId.Baller[_ballerId].level += 1;
+            if (_opponentId.Baller[_ballerId].level = 5) {
+                _createBaller("Rookie", 1, randomGen(), randomGen());
+                return ("Your Opponent Got a new Baller!");
+            }
+        }
+       // compare owner Baller[_ballerId].attack level to _opponentId Baller[_ballerId].defense level
+       //  if greater set winGame = true and set owner Baller[_ballerID].level += 10
+       // check if owner Baller[]_ballerId].level == 5,  if true then call _createBaller 
+       //
+       // else if winGame  == false then set _opponentId Baller[_ballerId].level += 1
+       // check if _opponentId Baller[_ballerId].level == 5,  if true then call _createBaller
+       // Announce the winner.
+       
+    }
+
+    /**
+    * @dev Changes the name of your baller if they are above level two
+    * @param _ballerId uint ID of the Baller who's name you want to change
+    * @param _newName string new name you want to give to your Baller
+    */
+    function changeName(uint _ballerId, string _newName) external aboveLevel(2, _ballerId) onlyOwnerOf(_ballerId) {
+        // TODO add your code
+    //    require Baller._level > 2;
+        Baller[_ballerID].name = _newName;
+    }
+
+    /**
+   * @dev Creates a baller based on the params given, adds them to the Baller array and mints a token
+   * @param _name string name of the Baller
+   * @param _level uint level of the Baller
+   * @param _offenseSkill offensive skill of the Baller
+   * @param _defenseSkill defensive skill of the Baller
+   */
+    function _createBaller(string _name, uint _level, uint _offenseSkill, uint _defenseSkill) internal {
+        // TODO add your code
+        uint ballerId = Baller.length + 1;
+        if (Baller.length < 2) {
+            msg.sender.name = _name;
+            Baller[ballerId].name = _name;
+            Baller[ballerId]._level = 2;
+            Baller[ballerId]._offenseSkill = randomGen();
+            Baller[ballerId]._defenseSkill = randomGen();
+        } else {
+            Baller[_ballerId][level, attack, defense] = _breedBallers((Baller.length -1), (Baller.length));
+        }
+        // call ERC721  mint( address to, uint _tokenId)   // How do I pass in 'to'  and 'tokenId' ?
+        // Is the 'to' equal to the ballerId  or is that the tokenId?
+    }
+
+    /**
+    * @dev Helper function for a new baller which averages the attributes of the level, attack, defense of the ballers
+    * @param _baller1 Baller first baller to average
+    * @param _baller2 Baller second baller to average
+    * @return tuple of level, attack and defense
+    */
+    function _breedBallers(Baller _baller1, Baller _baller2) internal pure returns (uint, uint, uint) {
+        uint level = _baller1.level.add(_baller2.level).div(2);
+        uint attack = _baller1.offenseSkill.add(_baller2.offenseSkill).div(2);
+        uint defense = _baller1.defenseSkill.add(_baller2.defenseSkill).div(2);
+        return (level, attack, defense);
+
+    }
+    
+    function randomGen() internal pure returns (uint4) {
+        uint random_number = uint(block.blockhash(block.number-1))%10 + 1
+        return random_number;
+    }
+    
+    function setUpGame()
+    {
+        if (owner.Baller[].length == 0) claimFreeBaller();
+        // post event that freeBaller has been claimedFreeBaller
+        if (_opponentId.Baller[].length == 0) claimFreeBaller();
+        // post event that opponent has claimed their free Baller
+        owner._ballerid = selectBaller();
+        _opponentId._ballerid = selectBaller();
+    }
+    
+    function selectBaller(uint msg.sender) {
+        // code to check for owner or opponent and allow them to choose an existing ballerId
+        // or buy a new baller and use it.
+    }
+    //START GAME //
+    /* Allow player to buy a new Baller   -> call buyBaller() then if # of ballerIds >= 2 call _breedBallers;
+          else call _CreateBaller  with pseudo random offenseSkill and defenseSkill between 1 and 10
+          Allow player to select the BallerID that they wish to play with  -> write function to selectBaller()
+       If playing the computer then set up the opponents Baller to use -> call _createBaller
+       Else allow the opposing player to buy a Baller call _buyBaller() or choose one of their Ballers
+          call _buyBaller()  then _createBaller()  then selectBaller()
+        Call playBall()
+        Ask the player if they want to play again. If yes call setupGame() and then playBall()
+        Else end the game and potentially tear everything down and suicide
+}
